@@ -86,10 +86,11 @@ public abstract class AP {
       Matcher mFinalState;
       
       while(currentLine!=null){
-                ////The line defines a initial state 
+        ////The line defines a initial state 
+        System.out.println(currentLine);
         mInitialState = initialState.matcher(currentLine);
         if(mInitialState.matches()){
-          String[] result = currentLine.split("(inic->)");
+          String[] result = currentLine.split("^(inic->)|;");
           State state = new State(result[0]);
           initial = state;
           if(getElemFromSet(states,initial) == null){
