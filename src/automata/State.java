@@ -6,7 +6,7 @@ public class State {
 	private String name;
 
     public State(String name) {
-        name = name;
+        this.name = name;
     }
 
     public String name() {
@@ -27,7 +27,7 @@ public class State {
     }
     
     public void rename(String Newname){
-        name= Newname;
+        name = Newname;
     }
 	
 }

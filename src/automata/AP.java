@@ -78,21 +78,19 @@ public abstract class AP {
       // Para diferenciar las transiciones del nombre del estado inicial
       // (inic -> q0) se asume que el nombre de todos los estados 
       // comienza con la letra q
-      Pattern transition = Pattern.compile("^(q).*(->)(q).*");
+      Pattern transition = Pattern.compile("^(q).*(->)(q).*;");
       Matcher mTransition;
 
       // Regular expression that defines a final state
-      Pattern finalState = Pattern.compile("^.*(\\[)(shape=doublecircle)(\\])");
+      Pattern finalState = Pattern.compile("^.*(\\[)(shape=doublecircle)(\\]);");
       Matcher mFinalState;
       
       while(currentLine!=null){
         ////The line defines a initial state 
-        System.out.println(currentLine);
         mInitialState = initialState.matcher(currentLine);
         if(mInitialState.matches()){
-          String[] result = currentLine.split("^(inic->)|;");
-          State state = new State(result[0]);
-          initial = state;
+          String[] result = currentLine.split("inic->|;");
+          initial = new State(result[1]);
           if(getElemFromSet(states,initial) == null){
             states.add(initial);
           }
