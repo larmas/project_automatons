@@ -99,7 +99,7 @@ public abstract class AP {
         //The line defines a transition
         mTransition = transition.matcher(currentLine);
         if(mTransition.matches()){
-          String[] result = currentLine.split("->|\\s(\\[)(label=)\"|\\/|\"(\\[)");
+          String[] result = currentLine.split("->|\\s(\\[)(label=)\"|\\/|\"(\\])|;");
           State fromState = new State(result[0]);
           State toState = new State(result[1]);
           char alphabetChar = result[2].charAt(0);

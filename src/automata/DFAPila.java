@@ -27,7 +27,7 @@ public final class DFAPila extends AP{
           Set<State> states,
           Set<Character> alphabet,
           Set<Character> stackAlphabet,
-          Set<Quintuple<State, Character,Character,String, State>> transitions,
+          Set<Quintuple<State,Character,Character,String,State>> transitions,
           Character stackInitial,
           State initial,
           Set<State> final_states)
@@ -57,10 +57,12 @@ public final class DFAPila extends AP{
   @Override
   public State delta(State from, Character c){
 		Iterator transitionsIt = transitions.iterator();
-		Quintuple<State, Character,Character,String, State> transitionCurrent;
+		Quintuple<State,Character,Character,String,State> transitionCurrent;
+    System.out.println("("+from+", "+c+")");
 		while (transitionsIt.hasNext()){
 			transitionCurrent = (Quintuple)transitionsIt.next();
-			if (transitionCurrent.first() == from && transitionCurrent.second() == c){
+      System.out.println(transitionCurrent.toString());
+			if (transitionCurrent.first().equals(from) && transitionCurrent.second() == c){
         // Es necesario controlar que el caracter a consumir este en alphabet??
         // Si el elemento a desapilar coincide con el tope del stack
         if(transitionCurrent.third()==stack.peek()){
@@ -85,22 +87,30 @@ public final class DFAPila extends AP{
 			int index = 0;
 			State currentState = initial;
 			while(index<string.length()){
-				currentState = delta(currentState,string.charAt(index));
-				if(currentState!=null)
+				State resultState = delta(currentState,string.charAt(index));
+        System.out.println("DEBUG TRANSITION "+index+":");
+        System.out.println("FROM: "+currentState+" FOR: "+string.charAt(index)+" TO: "+resultState);
+				if(resultState!=null){
+          currentState = resultState;
 					index++;
+        }
 				else
 					break;
 			}
-			if (currentState!=null && finalStates.isEmpty() && stack.peek()==Joker)
-				return true;
-			if (currentState!=null && !finalStates.isEmpty() && finalStates.contains(currentState))
-				return true;
+			if (currentState!=null && finalStates.isEmpty() && stack.peek()==Joker){
+        System.out.println("Empty stack");
+        return true;
+      }
+			if (currentState!=null && !finalStates.isEmpty() && getElemFromSet(finalStates,currentState)!= null){
+				System.out.println("Final States");
+        return true;
+      }
 
 			return false;
   }
   
   public boolean rep_ok() {
-    if(!this.transitionConditions() && !this.unreachableState())
+    if(this.transitionConditions() && this.reachableState())
         return true;
   	return false;
   }
@@ -109,13 +119,54 @@ public final class DFAPila extends AP{
   // transiciones lambda
   public boolean transitionConditions(){
     //TODO this method have to be implemented
-    return false;
+    Iterator itTransitions1 = transitions.iterator();
+    Iterator itTransitions2 = transitions.iterator();
+    Quintuple<State,Character,Character,String,State> cTransition1;
+    Quintuple<State,Character,Character,String,State> cTransition2;
+    boolean deterministic = true;
+    boolean conditionsOK = true;
+    while(itTransitions1.hasNext()){
+      cTransition1 = (Quintuple) itTransitions1.next();
+      // Desapilo algo que pertenezca al alfabeto del stack
+      conditionsOK = conditionsOK && stackAlphabet.contains(cTransition1.third());
+      // Apilo cosas que pertenezcan al alfabeto del stack
+      String auxString = cTransition1.fourth();
+      for(int index=0; index<auxString.length(); index++){
+        conditionsOK = conditionsOK && stackAlphabet.contains(auxString.charAt(index));
+      }
+      // No existen transiciones lambda
+      conditionsOK = conditionsOK && cTransition1.second()!= Lambda;
+      // Se mantiene el determinismo
+      while(itTransitions2.hasNext()){
+        cTransition2 = (Quintuple) itTransitions2.next();
+        if(cTransition1.first().equals(cTransition2.first()) &&
+          cTransition1.second()==cTransition2.second() &&
+          cTransition1.third()==cTransition2.third())
+            conditionsOK = conditionsOK && 
+                           cTransition1.fourth().equals(cTransition2.fourth()) &&
+                           cTransition1.fifth().equals(cTransition2.fifth());
+      }
+    }
+    return conditionsOK;
   }
 
-  //Recorrer conjunto de estados observando si son alcanzables
-  public boolean unreachableState(){
-    //TODO this method have to be implemented
-    return false;
+  //There are no unreachable states
+  public boolean reachableState(){
+    Iterator itStates = states.iterator();
+    State currentState;
+    boolean reachable=true;
+    while(itStates.hasNext()){
+      currentState = (State)itStates.next();
+      Iterator itTransitions = transitions.iterator();
+      Quintuple<State,Character,Character,String,State> currentTransition;
+      boolean result = false;
+      while(itTransitions.hasNext()){
+        currentTransition = (Quintuple)itTransitions.next();
+        result = result || currentTransition.fifth() == currentState; 
+      }
+      reachable = reachable && result;
+    }
+    return reachable;
   }
 
 
