@@ -25,10 +25,12 @@ public class Main{
 		DFAPila dfap = new DFAPila(states,alphabet,stackAlphabet,transitions,stackInitial,initial,final_states);
 
 		dfap.from_dot(new File("automata/sample.txt"));
-		//System.out.println(dfap.initial_state().name());
 
 		boolean result = dfap.accepts("ab");
-		System.out.println(result);
+		System.out.println("Automata acepta la cadena: "+result);
+
+
+		
 
 	}
 }

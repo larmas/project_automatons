@@ -33,8 +33,6 @@ public final class DFAPila extends AP{
           Set<State> final_states)
           throws IllegalArgumentException
   {
-    //Se borro  
-    //lo mismo en el perfil
     this.states = states;
     this.alphabet = alphabet;
     this.stackAlphabet = stackAlphabet;
@@ -53,27 +51,32 @@ public final class DFAPila extends AP{
     System.out.println("Is a DFA Pila");
   }
 
-  // Delta debe realizar las acciones relacionadas con la pila de cada transicion
   @Override
   public State delta(State from, Character c){
 		Iterator transitionsIt = transitions.iterator();
 		Quintuple<State,Character,Character,String,State> transitionCurrent;
     System.out.println("("+from+", "+c+")");
 		while (transitionsIt.hasNext()){
-			transitionCurrent = (Quintuple)transitionsIt.next();
-      System.out.println(transitionCurrent.toString());
+		
+    	transitionCurrent = (Quintuple)transitionsIt.next();
+      //System.out.println(transitionCurrent.toString());
 			if (transitionCurrent.first().equals(from) && transitionCurrent.second() == c){
         // Es necesario controlar que el caracter a consumir este en alphabet??
         // Si el elemento a desapilar coincide con el tope del stack
         if(transitionCurrent.third()==stack.peek()){
           // Desapilo siempre que no sea Lambda ni Joker
           if(transitionCurrent.third()!= Joker && transitionCurrent.third()!=Lambda)
+    
             stack.pop();
+    
           // Apilo el string caracter por caracter
           for(int index=0; index<transitionCurrent.fourth().length(); index++){
+    
             char currentChar = transitionCurrent.fourth().charAt(index);
             if(currentChar!=Joker && currentChar!= Lambda)
+    
               stack.push(currentChar);
+    
           }
 				  return transitionCurrent.fifth();
         }
@@ -84,70 +87,110 @@ public final class DFAPila extends AP{
 
   @Override
   public boolean accepts(String string) {
-			int index = 0;
+		if(rep_ok()){	
+    
+      int index = 0;
 			State currentState = initial;
 			while(index<string.length()){
-				State resultState = delta(currentState,string.charAt(index));
-        System.out.println("DEBUG TRANSITION "+index+":");
-        System.out.println("FROM: "+currentState+" FOR: "+string.charAt(index)+" TO: "+resultState);
+		
+    		State resultState = delta(currentState,string.charAt(index));
 				if(resultState!=null){
+    
           currentState = resultState;
 					index++;
-        }
-				else
+        }else
 					break;
-			}
+		
+    	}
 			if (currentState!=null && finalStates.isEmpty() && stack.peek()==Joker){
+        
         System.out.println("Empty stack");
         return true;
+      
       }
 			if (currentState!=null && !finalStates.isEmpty() && getElemFromSet(finalStates,currentState)!= null){
-				System.out.println("Final States");
+			
+      	System.out.println("Final States");
         return true;
+      
       }
-
 			return false;
+    }else{
+      throw new  IllegalArgumentException("Automata no cumple las condiciones");
+    
+    }
   }
   
   public boolean rep_ok() {
-    if(this.transitionConditions() && this.reachableState())
+    System.out.println("REP_OK REPORTS: \n");
+    System.out.println("*StackAlphabet and LambdaTransitions: " + this.transitionConditions());
+    System.out.println("*Deterministic: "+ this.isDeterministic());
+    System.out.println("*States: "+ this.reachableState()+"\n");
+    
+    if(this.transitionConditions() && this.reachableState() && this.isDeterministic())
+        
         return true;
-  	return false;
+  	
+    return false;
   }
 
-  // Recorrer transiciones observando no determinismo, alfabeto de stack y
-  // transiciones lambda
-  public boolean transitionConditions(){
-    //TODO this method have to be implemented
-    Iterator itTransitions1 = transitions.iterator();
-    Iterator itTransitions2 = transitions.iterator();
+  public boolean isDeterministic(){
+    
     Quintuple<State,Character,Character,String,State> cTransition1;
     Quintuple<State,Character,Character,String,State> cTransition2;
     boolean deterministic = true;
-    boolean conditionsOK = true;
+
+    Iterator itTransitions1 = transitions.iterator();
+
     while(itTransitions1.hasNext()){
+
+      Iterator itTransitions2 = transitions.iterator();
       cTransition1 = (Quintuple) itTransitions1.next();
-      // Desapilo algo que pertenezca al alfabeto del stack
-      conditionsOK = conditionsOK && stackAlphabet.contains(cTransition1.third());
-      // Apilo cosas que pertenezcan al alfabeto del stack
-      String auxString = cTransition1.fourth();
-      for(int index=0; index<auxString.length(); index++){
-        conditionsOK = conditionsOK && stackAlphabet.contains(auxString.charAt(index));
-      }
-      // No existen transiciones lambda
-      conditionsOK = conditionsOK && cTransition1.second()!= Lambda;
-      // Se mantiene el determinismo
+      
       while(itTransitions2.hasNext()){
+
         cTransition2 = (Quintuple) itTransitions2.next();
+
         if(cTransition1.first().equals(cTransition2.first()) &&
           cTransition1.second()==cTransition2.second() &&
-          cTransition1.third()==cTransition2.third())
-            conditionsOK = conditionsOK && 
+          cTransition1.third()==cTransition2.third()){
+
+            deterministic = deterministic && 
                            cTransition1.fourth().equals(cTransition2.fourth()) &&
                            cTransition1.fifth().equals(cTransition2.fifth());
+        
+        }          
+
       }
+
     }
-    return conditionsOK;
+    return deterministic;
+  }
+
+  public boolean transitionConditions(){
+    Iterator itTransitions = transitions.iterator();
+    Quintuple<State,Character,Character,String,State> cTransition;
+    boolean belongsStackPop = true;
+    boolean belongsStackAdd = true;
+    boolean lambdaTransition = true;
+
+    while(itTransitions.hasNext()){
+      
+      cTransition = (Quintuple) itTransitions.next();
+      // Desapilo algo que pertenezca al alfabeto del stack
+      belongsStackPop = belongsStackPop && stackAlphabet.contains(cTransition.third());
+      // Apilo cosas que pertenezcan al alfabeto del stack
+      String auxString = cTransition.fourth();
+      for(int index=0; index<auxString.length(); index++){
+      
+        belongsStackAdd = belongsStackAdd && stackAlphabet.contains(auxString.charAt(index));
+      
+      }
+      // No existen transiciones lambda
+      lambdaTransition = lambdaTransition && cTransition.second()!= Lambda;
+    
+    }
+    return belongsStackPop && belongsStackAdd &&  lambdaTransition;
   }
 
   //There are no unreachable states
@@ -156,18 +199,33 @@ public final class DFAPila extends AP{
     State currentState;
     boolean reachable=true;
     while(itStates.hasNext()){
+      
       currentState = (State)itStates.next();
+      if(currentState.equals(initial))
+      
+        continue;
+      
       Iterator itTransitions = transitions.iterator();
       Quintuple<State,Character,Character,String,State> currentTransition;
       boolean result = false;
       while(itTransitions.hasNext()){
+      
         currentTransition = (Quintuple)itTransitions.next();
-        result = result || currentTransition.fifth() == currentState; 
+        result = result || currentState.equals(currentTransition.fifth()); 
+      
       }
       reachable = reachable && result;
+    
     }
     return reachable;
   }
 
+  public void to_empty_stack(){
+    //TODO this method have to be implemented
+  }
+
+  public void to_final_state(){
+    //TODO this method have to be implemented
+  }
 
 }
