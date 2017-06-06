@@ -15,7 +15,7 @@ public abstract class AP {
 
 	public static final Character Lambda = '_';
 	public static final Character Joker = '@'; // Marca de la pila
-	public static final Character Initial = 'Z'; 
+	public static final Character Mark = '*'; 
 
 	protected State initial;
   protected Character stackInitial;
@@ -173,6 +173,7 @@ public abstract class AP {
   public abstract boolean accepts(String string);
 
   public abstract Object delta(State from, Character c);
+
 
 
 }

@@ -222,10 +222,85 @@ public final class DFAPila extends AP{
 
   public void to_empty_stack(){
     //TODO this method have to be implemented
+    String aux = ""+Joker+Mark;
+    System.out.println(aux);
+    String lambdaString = ""+Lambda;
+    
+    // Nuevo estado inicial
+    State oldInitial = initial;
+    initial = new State("q1000");
+
+    //Nueva transicion de nuevo estado inicial al antiguo estado inicial
+    Quintuple<State,Character,Character,String,State> transitionPN;
+    transitionPN = new Quintuple<State,Character,Character,String,State>(initial,Lambda,Mark,aux,oldInitial);
+    transitions.add(transitionPN);
+
+    //Reinicio de stack 
+    stack = new Stack<Character>();
+    stack.add(Mark);
+    stack.add(Joker);
+
+    //Nuevo estado final
+    State newState = new State("q2000");
+
+    //Para cada estado final del automata se crea una transicion al estado que vacia la pila
+    Iterator itFinalStates = finalStates.iterator();
+    while(itFinalStates.hasNext()){
+
+      State currentState = (State) itFinalStates.next();
+      Quintuple<State,Character,Character,String,State> newTransition;
+      newTransition = new Quintuple<State,Character,Character,String,State>(currentState,Lambda,'$',lambdaString,newState);
+      transitions.add(newTransition);
+
+    }
+    Quintuple<State,Character,Character,String,State> newTransition;
+    newTransition = new Quintuple<State,Character,Character,String,State>(newState,Lambda,'$',lambdaString,newState);
+    transitions.add(newTransition);
+    states.add(initial);
+    states.add(newState);
+    finalStates.clear();
+
+
+
   }
 
   public void to_final_state(){
     //TODO this method have to be implemented
+    String aux = ""+Mark+Joker;
+    String lambdaString = ""+Lambda;
+    // Nuevo estado inicial
+    State oldInitial = initial;
+    initial = new State("q1000");
+
+    //Nueva transicion de nuevo estado inicial al antiguo estado inicial
+    Quintuple<State,Character,Character,String,State> transitionPN;
+    transitionPN = new Quintuple<State,Character,Character,String,State>(initial,Lambda,Mark,aux,oldInitial);
+    transitions.add(transitionPN);
+    //Reinicio de stack 
+    stack = new Stack<Character>();
+    stack.add(Mark);
+    stack.add(Joker);
+
+    //Nuevo estado final
+    State newFinalState = new State("q2000");
+    finalStates.add(newFinalState);
+
+    //Para cada estado del automata se crea una transicion al estado final
+    Iterator itStates = states.iterator();
+    while(itStates.hasNext()){
+
+      State currentState = (State) itStates.next();
+      Quintuple<State,Character,Character,String,State> newTransition;
+      newTransition = new Quintuple<State,Character,Character,String,State>(currentState,Lambda,Mark,lambdaString,newFinalState);
+      transitions.add(newTransition);
+    }
+
+    states.add(initial);
+
   }
+
+
+
+
 
 }
