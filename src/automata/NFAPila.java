@@ -6,15 +6,15 @@ import java.util.Iterator;
 
 import utils.Quintuple;
 
-public final class DFAPila extends AP{
+public final class NFAPila extends AP{
 
 	private   Object nroStates[] ;
   private Stack<Character> stack; //the stack of the automaton
 
 
   /**
-   * Constructor of the class - returns a DFAPila object
-   * @param states - states of the DFAPila
+   * Constructor of the class - returns a NFAPila object
+   * @param states - states of the NFAPila
    * @param alphabet - the alphabet of the automaton
    * @param stackAlphabet - the alphabet of the stack
    * @param transitions - transitions of the automaton
@@ -23,7 +23,7 @@ public final class DFAPila extends AP{
    * @param final_states - acceptance states of the automaton
    * @throws IllegalArgumentException
    */
-  public DFAPila(
+  public NFAPila(
           Set<State> states,
           Set<Character> alphabet,
           Set<Character> stackAlphabet,
@@ -104,13 +104,13 @@ public final class DFAPila extends AP{
     	}
 			if (currentState!=null && finalStates.isEmpty() && stack.peek()==Joker){
         
-        System.out.println("Accepted for empty stack");
+        System.out.println("Empty stack");
         return true;
       
       }
 			if (currentState!=null && !finalStates.isEmpty() && getElemFromSet(finalStates,currentState)!= null){
 			
-      	System.out.println("Accepted for final States");
+      	System.out.println("Final States");
         return true;
       
       }
@@ -124,47 +124,13 @@ public final class DFAPila extends AP{
   public boolean rep_ok() {
     System.out.println("REP_OK REPORTS: \n");
     System.out.println("*StackAlphabet and LambdaTransitions: " + this.transitionConditions());
-    System.out.println("*Deterministic: "+ this.isDeterministic());
     System.out.println("*States: "+ this.reachableState()+"\n");
     
-    if(this.transitionConditions() && this.reachableState() && this.isDeterministic())
+    if(this.transitionConditions() && this.reachableState())
         
         return true;
   	
     return false;
-  }
-
-  public boolean isDeterministic(){
-    
-    Quintuple<State,Character,Character,String,State> cTransition1;
-    Quintuple<State,Character,Character,String,State> cTransition2;
-    boolean deterministic = true;
-
-    Iterator itTransitions1 = transitions.iterator();
-
-    while(itTransitions1.hasNext()){
-
-      Iterator itTransitions2 = transitions.iterator();
-      cTransition1 = (Quintuple) itTransitions1.next();
-      
-      while(itTransitions2.hasNext()){
-
-        cTransition2 = (Quintuple) itTransitions2.next();
-
-        if(cTransition1.first().equals(cTransition2.first()) &&
-          cTransition1.second()==cTransition2.second() &&
-          cTransition1.third()==cTransition2.third()){
-
-            deterministic = deterministic && 
-                           cTransition1.fourth().equals(cTransition2.fourth()) &&
-                           cTransition1.fifth().equals(cTransition2.fifth());
-        
-        }          
-
-      }
-
-    }
-    return deterministic;
   }
 
   public boolean transitionConditions(){
@@ -172,7 +138,6 @@ public final class DFAPila extends AP{
     Quintuple<State,Character,Character,String,State> cTransition;
     boolean belongsStackPop = true;
     boolean belongsStackAdd = true;
-    boolean lambdaTransition = true;
 
     while(itTransitions.hasNext()){
       
@@ -186,11 +151,9 @@ public final class DFAPila extends AP{
         belongsStackAdd = belongsStackAdd && stackAlphabet.contains(auxString.charAt(index));
       
       }
-      // No existen transiciones lambda
-      lambdaTransition = lambdaTransition && cTransition.second()!= Lambda;
     
     }
-    return belongsStackPop && belongsStackAdd &&  lambdaTransition;
+    return belongsStackPop && belongsStackAdd;
   }
 
   //There are no unreachable states
@@ -223,6 +186,7 @@ public final class DFAPila extends AP{
   public void to_empty_stack(){
     //TODO this method have to be implemented
     String aux = ""+Joker+Mark;
+    System.out.println(aux);
     String lambdaString = ""+Lambda;
     
     // Nuevo estado inicial

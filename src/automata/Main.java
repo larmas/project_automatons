@@ -22,18 +22,26 @@ public class Main{
     State initial = null;
     Set<State> final_states = new HashSet<State>();
 		
+
 		DFAPila dfap = new DFAPila(states,alphabet,stackAlphabet,transitions,stackInitial,initial,final_states);
+		dfap.from_dot(new File("text/sampleFinalState.txt"));
+		//dfap.from_dot(new File("text/sampleEmptyStack.txt"));
 
-		dfap.from_dot(new File("text/sample.txt"));
-
+		//Se evalua la cadena "ab" con el automata dfap1
 		boolean result = dfap.accepts("ab");
-		System.out.println("Automata acepta la cadena: "+result);
-		//dfap.to_empty_stack();
-		dfap.to_final_state();
+		System.out.println("El automata acepta la cadena: "+result);
+		
+		//Se ejecutan los algoritmos de transformaciones
+		dfap.to_empty_stack();
+		//dfap.to_final_state();
+		
+		//Se almacena en un string el resultados del algoritmo ejecutado
 		String to_dot = dfap.to_dot();
 
 		try{
+			//Se pasa el resultado del algoritmos a un archivo dot
 			String newFileDot = new String("text/automaton.txt");
+
 			File file = new File(newFileDot);
 
 			BufferedWriter bw = new BufferedWriter(new FileWriter(newFileDot));
@@ -44,6 +52,7 @@ public class Main{
          e.printStackTrace();
     }
     try{
+    	//Inicializacion necesaria para la libreria "graphviz"
     	String dotPath = "/usr/local/bin/dot";
 	    String fileInputPath = "text/automaton.txt";
 	    String fileOutputPath = "output/automaton.jpg";
@@ -59,16 +68,12 @@ public class Main{
 	                
 	    Runtime rt = Runtime.getRuntime();
 	    
-	    rt.exec( cmd );
+	    //Se crea el grafico del automata obtenido
+	    rt.exec(cmd);
+
     }catch(Exception ex) {
       ex.printStackTrace();
     }
-    
-
-
-
-
-		
 
 	}
 }
