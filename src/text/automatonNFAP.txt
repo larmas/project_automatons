@@ -1,0 +1,17 @@
+digraph{
+inic[shape=point];
+inic->q1000;
+q1->q1 [label="a/a/aa"];
+q1->q2 [label="b/a/_"];
+q2->q2000 [label="_/*/_"];
+q0->q2000 [label="_/*/_"];
+q2->q2 [label="b/b/_"];
+q1->q2 [label="a/a/a"];
+q1000->q0 [label="_/*/*@"];
+q1->q2000 [label="_/*/_"];
+q2->q2000 [label="_/*/_"];
+q0->q1 [label="a/@/a"];
+
+q2[shape=doublecircle];
+q2000[shape=doublecircle];
+}

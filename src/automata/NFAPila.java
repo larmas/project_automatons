@@ -1,15 +1,22 @@
 package automata;
 
 import java.util.Set;
+import java.util.HashSet;
 import java.util.Stack;
 import java.util.Iterator;
+import java.util.regex.*;
+import java.io.*;
 
 import utils.Quintuple;
 
 public final class NFAPila extends AP{
 
-	private   Object nroStates[] ;
   private Stack<Character> stack; //the stack of the automaton
+  // Elementos de una GLC
+  private Set<Character> notTerminals;
+  private Set<Character> terminals;
+  private Character initialSymbol;
+  //private Set<> productions;
 
 
   /**
@@ -42,89 +49,171 @@ public final class NFAPila extends AP{
     this.stackInitial = stackInitial;
     this.initial = initial;
     this.finalStates = final_states;
-    nroStates =  states.toArray();
     stack = new Stack<Character>();
     stack.add(Joker); //insert the mark in the stack
     if (!rep_ok()){
         throw new  IllegalArgumentException();
     }
-    System.out.println("Is a DFA Pila");
+    System.out.println("Is a NFA Pila");
   }
 
-  @Override
-  public State delta(State from, Character c){
-		Iterator transitionsIt = transitions.iterator();
+  public void get_GLC(File file){
+
+    FileReader fr;
+    BufferedReader br = null;
+    try{
+      
+      fr = new FileReader (file);
+      br = new BufferedReader(fr);
+    
+    }catch(Exception e){
+         e.printStackTrace();
+    }
+    try{
+    
+      String currentLine = br.readLine();
+
+
+      Pattern not_terminal = Pattern.compile("[AZ]");
+      Matcher mNot_terminal;
+
+      Pattern terminal = Pattern.compile("[az]|[09]|[\\%\\&\\(\\)\\*\\+\\-\\/\\<\\=\\>\\[\\]\\.]");
+      Matcher mTerminal;
+
+      while (currentLine!=null){
+
+
+        String[] result = currentLine.split("\\s*→\\s*|\\s*(\\|)\\s*");
+        //for(String i : result){
+          //System.out.print(i+" ; ");
+        //}
+        
+        for(int i=0; i<result.length; i++){
+          
+          String aux = result[i].trim();
+          //System.out.println(aux);
+          for (int j=0; j<aux.length(); j++){
+            
+            Character newChar = aux.charAt(j);
+            System.out.println(newChar);
+            mNot_terminal = not_terminal.matcher(aux);
+            if(mNot_terminal.matches()){
+                          
+              
+              if(!notTerminals.contains(newChar)){
+            
+                notTerminals.add(newChar);
+            
+              }
+            
+            }
+
+            mTerminal = terminal.matcher(aux);
+            if(mTerminal.matches()){
+              if(!terminals.contains(newChar)){
+            
+                terminals.add(newChar);
+            
+              }
+
+            }
+          
+          }
+
+
+        
+        }
+
+
+        currentLine = br.readLine();
+      }
+
+      
+
+      br.close();
+    }catch(Exception e){
+         e.printStackTrace();
+    }
+  }
+
+  public Set<Quintuple<State,Character,Character,String,State>> delta(State from, Character c){
+    Set<Quintuple<State,Character,Character,String,State>> result = new HashSet<Quintuple<State,Character,Character,String,State>>();
+		Iterator itTransitions = transitions.iterator();
 		Quintuple<State,Character,Character,String,State> transitionCurrent;
-    System.out.println("("+from+", "+c+")");
-		while (transitionsIt.hasNext()){
+    //System.out.println("("+from+", "+c+")");
+		while (itTransitions.hasNext()){
 		
-    	transitionCurrent = (Quintuple)transitionsIt.next();
-      //System.out.println(transitionCurrent.toString());
+    	transitionCurrent = (Quintuple)itTransitions.next();
 			if (transitionCurrent.first().equals(from) && transitionCurrent.second() == c){
-        // Es necesario controlar que el caracter a consumir este en alphabet??
-        // Si el elemento a desapilar coincide con el tope del stack
-        if(transitionCurrent.third()==stack.peek()){
-          // Desapilo siempre que no sea Lambda ni Joker
-          if(transitionCurrent.third()!= Joker && transitionCurrent.third()!=Lambda)
+          
+				  result.add(transitionCurrent);
+      
+      }
+		
+    }
+  	return result;
+  }
+
+  public State apply_delta(Quintuple<State,Character,Character,String,State> transition){
+    if(transition.third()!= Joker && transition.third()!=Lambda)
     
             stack.pop();
+
+    for(int index=0; index<transition.fourth().length(); index++){
     
-          // Apilo el string caracter por caracter
-          for(int index=0; index<transitionCurrent.fourth().length(); index++){
-    
-            char currentChar = transitionCurrent.fourth().charAt(index);
-            if(currentChar!=Joker && currentChar!= Lambda)
-    
-              stack.push(currentChar);
-    
-          }
-				  return transitionCurrent.fifth();
-        }
-      }
-		}
-  	return null;
+      char currentChar = transition.fourth().charAt(index);
+      if(currentChar!=Joker && currentChar!= Lambda)
+
+        stack.push(currentChar);
+
+    }
+    return transition.fifth();
   }
+
 
   @Override
   public boolean accepts(String string) {
-		if(rep_ok()){	
+    return false;
+  }
+
+  public boolean new_accepts(String string, State currentState, boolean accept) {
+    if (string.length()==0) {
+      accept = true;
     
-      int index = 0;
-			State currentState = initial;
-			while(index<string.length()){
-		
-    		State resultState = delta(currentState,string.charAt(index));
-				if(resultState!=null){
-    
-          currentState = resultState;
-					index++;
-        }else
-					break;
-		
-    	}
-			if (currentState!=null && finalStates.isEmpty() && stack.peek()==Joker){
-        
-        System.out.println("Empty stack");
-        return true;
-      
-      }
-			if (currentState!=null && !finalStates.isEmpty() && getElemFromSet(finalStates,currentState)!= null){
-			
-      	System.out.println("Final States");
-        return true;
-      
-      }
-			return false;
     }else{
-      throw new  IllegalArgumentException("Automata no cumple las condiciones");
-    
+
+      Set<Quintuple<State,Character,Character,String,State>> resultTransitions = delta(currentState,string.charAt(0));
+      //System.out.println("Caracter : "+string.charAt(0));
+      //System.out.println("Tamaño de delta: "+ resultTransitions.size());
+      Iterator itTransitions = resultTransitions.iterator();
+      Quintuple<State,Character,Character,String,State> currentTransition;
+
+      if(!resultTransitions.isEmpty()){
+        //System.out.println("OK...");
+        while(itTransitions.hasNext()){
+
+          currentTransition = (Quintuple)itTransitions.next();
+          State resultState = apply_delta(currentTransition);
+          //System.out.println("Me movi de "+currentState.name()+" a "+resultState.name());
+          String newString = new String();
+          for (int i=1; i<string.length(); i++) {
+           
+            newString = newString+string.charAt(i);
+          
+          }
+          accept = accept || this.new_accepts(newString,resultState,accept);
+          
+        }
+      }else{
+        accept = accept || false;
+      }
+
     }
+	   return accept;
+  	
   }
   
   public boolean rep_ok() {
-    System.out.println("REP_OK REPORTS: \n");
-    System.out.println("*StackAlphabet and LambdaTransitions: " + this.transitionConditions());
-    System.out.println("*States: "+ this.reachableState()+"\n");
     
     if(this.transitionConditions() && this.reachableState())
         
@@ -184,9 +273,7 @@ public final class NFAPila extends AP{
   }
 
   public void to_empty_stack(){
-    //TODO this method have to be implemented
     String aux = ""+Joker+Mark;
-    System.out.println(aux);
     String lambdaString = ""+Lambda;
     
     // Nuevo estado inicial
@@ -223,12 +310,9 @@ public final class NFAPila extends AP{
     states.add(newState);
     finalStates.clear();
 
-
-
   }
 
   public void to_final_state(){
-    //TODO this method have to be implemented
     String aux = ""+Mark+Joker;
     String lambdaString = ""+Lambda;
     // Nuevo estado inicial
@@ -261,6 +345,24 @@ public final class NFAPila extends AP{
     states.add(initial);
 
   }
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

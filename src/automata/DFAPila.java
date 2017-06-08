@@ -55,7 +55,7 @@ public final class DFAPila extends AP{
   public State delta(State from, Character c){
 		Iterator transitionsIt = transitions.iterator();
 		Quintuple<State,Character,Character,String,State> transitionCurrent;
-    System.out.println("("+from+", "+c+")");
+    //System.out.println("("+from+", "+c+")");
 		while (transitionsIt.hasNext()){
 		
     	transitionCurrent = (Quintuple)transitionsIt.next();
@@ -122,10 +122,6 @@ public final class DFAPila extends AP{
   }
   
   public boolean rep_ok() {
-    System.out.println("REP_OK REPORTS: \n");
-    System.out.println("*StackAlphabet and LambdaTransitions: " + this.transitionConditions());
-    System.out.println("*Deterministic: "+ this.isDeterministic());
-    System.out.println("*States: "+ this.reachableState()+"\n");
     
     if(this.transitionConditions() && this.reachableState() && this.isDeterministic())
         
@@ -259,8 +255,6 @@ public final class DFAPila extends AP{
     states.add(newState);
     finalStates.clear();
 
-
-
   }
 
   public void to_final_state(){
@@ -297,9 +291,4 @@ public final class DFAPila extends AP{
     states.add(initial);
 
   }
-
-
-
-
-
 }
